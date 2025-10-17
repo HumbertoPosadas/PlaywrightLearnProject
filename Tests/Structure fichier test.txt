@@ -1,0 +1,358 @@
+# PROCÉDURE COMPLÈTE : CRÉATION D'UN FICHIER DE TEST PLAYWRIGHT
+
+## ÉTAPE 1 : STRUCTURE DE BASE DU FICHIER
+- Extension : `.spec.ts`
+- Nom du fichier : descriptif de la fonctionnalité testée (ex: 06-validation.spec.ts)
+
+## ÉTAPE 2 : IMPORTATIONS ESSENTIELLES
+```typescript
+import { test, expect } from '@playwright/test';
+```
+**Explication :**
+- `test` : Fonction principale pour définir des tests et groupes de tests
+- `expect` : Fonction d'assertion pour vérifier les résultats attendus
+- **Note :** Browser et Page ne sont généralement pas nécessaires car fournis 
+par les fixtures (Les fixtures sont le système "magique" de Playwright qui vous 
+évite tout le code de gestion du navigateur, vous permettant de vous concentrer 
+uniquement sur la logique de vos tests)
+
+## ÉTAPE 3 : STRUCTURE D'ORGANISATION DES TESTS
+
+### A) Groupe de tests simple (test.describe)
+```typescript
+test.describe('Nom descriptif du groupe de tests', () => {
+    // Tests individuels ici
+});
+```
+**Objectif :** Regrouper des tests liés à une même fonctionnalité
+
+**Structure expliquée :**
+- **Premier paramètre (string)** : `'Nom descriptif du groupe de tests'`
+  - Nom affiché dans les rapports de test
+  - Permet d'identifier le groupe dans la console/CI
+  - Doit être descriptif de la fonctionnalité testée
+  
+- **Deuxième paramètre (arrow function)** : `() => { ... }`
+  - Fonction qui contient tous les tests du groupe
+  - Utilise une arrow function pour créer un scope (portée)
+  - Permet de partager des variables/configuration entre tests du groupe
+  - Exécutée quand Playwright charge les tests (pas à l'exécution)
+```
+
+### B) Test individuel avec steps (recommandé)
+```typescript
+test('Description claire du test', async ({ page }) => {
+    await test.step('Given - État initial', async () => {
+        // Actions de setup
+    });
+    
+    await test.step('When - Actions utilisateur', async () => {
+        // Actions à tester
+    });
+    
+    await test.step('Then - Vérifications', async () => {
+        // Assertions
+    });
+});
+```
+
+**Structure et composition des test.step expliquées :**
+
+**1. Syntaxe générale :**
+```typescript
+await test.step('Nom descriptif du step', async () => {
+    // Code à exécuter dans ce step
+});
+```
+
+**2. Paramètres détaillés :**
+- **Premier paramètre (string)** : `'Nom descriptif du step'`
+  - Description claire de l'action/vérification
+  - Affiché dans les rapports de test pour traçabilité
+  - Permet de localiser rapidement les échecs
+  
+- **Deuxième paramètre (async function)** : `async () => { ... }`
+  - Fonction asynchrone contenant le code du step
+  - Peut contenir plusieurs actions Playwright
+  - Doit être `async` pour permettre les `await`
+
+**3. Pattern BDD (Behavior Driven Development) :**
+```typescript
+test('Validation de connexion', async ({ page }) => {
+    await test.step('Given - Je suis sur la page de login', async () => {
+        await page.goto('/login');
+        await expect(page).toHaveTitle('Connexion');
+    });
+    
+    await test.step('When - Je saisis mes identifiants valides', async () => {
+        await page.fill('[name="username"]', 'user@test.com');
+        await page.fill('[name="password"]', 'password123');
+        await page.click('button[type="submit"]');
+    });
+    
+    await test.step('Then - Je suis connecté et redirigé', async () => {
+        await page.waitForURL('/dashboard');
+        await expect(page).toHaveTitle('Tableau de bord');
+    });
+});
+```
+
+**4. Avantages des test.step :**
+- **Lisibilité** : Structure claire du scénario de test
+- **Debugging** : Localisation précise des échecs
+- **Rapports** : Affichage détaillé par étape
+- **Maintenance** : Compréhension rapide du flux de test
+- **Documentation** : Auto-documentation du comportement testé
+
+**5. Bonnes pratiques pour les steps :**
+- **Un step = Une responsabilité** : Ne pas mélanger setup, actions et vérifications
+- **Noms explicites** : Décrire clairement ce qui se passe
+- **Steps atomiques** : Chaque step doit pouvoir être compris indépendamment
+- **Ordre logique** : Suivre le flux utilisateur naturel
+
+**6. Exemple avec gestion d'erreur :**
+```typescript
+test('Test avec steps détaillés', async ({ page }) => {
+    await test.step('Setup - Navigation vers la page', async () => {
+        await page.goto('https://example.com');
+        await page.click('text=Accept cookies');  // Gestion cookies
+    });
+    
+    await test.step('Action - Interaction utilisateur', async () => {
+        await page.waitForSelector('[data-testid="menu"]');
+        await page.click('[data-testid="contact-link"]');
+    });
+    
+    await test.step('Verification - Contrôle du résultat', async () => {
+        await page.waitForURL('**/contact');
+        await expect(page.locator('h1')).toHaveText('Contactez-nous');
+    });
+});
+```
+
+## ÉTAPE 4 : ACTIONS PLAYWRIGHT ET VÉRIFICATIONS
+
+### A) Actions de Navigation
+```typescript
+// Navigation de base
+await page.goto('https://example.com');              // Naviguer vers une URL
+await page.goto('/relative-path');                   // URL relative
+await page.goBack();                                 // Retour page précédente
+await page.goForward();                              // Page suivante
+await page.reload();                                 // Recharger la page
+
+// Attendre une navigation
+await page.waitForURL('**/expected-path');          // Attendre URL spécifique
+await page.waitForURL(/.*dashboard.*/);             // Attendre URL avec regex
+await page.waitForLoadState('networkidle');         // Attendre fin du chargement
+```
+
+### B) Actions d'Interaction
+```typescript
+// Clics
+await page.click('text=Cliquez ici');               // Clic par texte
+await page.click('#button-id');                     // Clic par ID
+await page.click('[data-testid="submit"]');         // Clic par attribut
+await page.getByRole('button', { name: 'Submit' }).click(); // Clic par rôle
+
+// Saisie de texte
+await page.fill('[name="username"]', 'mon-email');  // Remplir un champ
+await page.type('[name="search"]', 'ma recherche'); // Taper caractère par caractère
+await page.clear('[name="field"]');                 // Vider un champ
+
+// Sélections
+await page.selectOption('select', 'option-value');  // Sélectionner une option
+await page.check('[type="checkbox"]');              // Cocher une case
+await page.uncheck('[type="checkbox"]');            // Décocher une case
+
+// Interactions avancées
+await page.hover('[data-testid="menu"]');           // Survol d'un élément
+await page.dragAndDrop('#source', '#target');       // Glisser-déposer
+await page.keyboard.press('Enter');                 // Appuyer sur une touche
+```
+
+### C) Actions d'Attente
+```typescript
+// Attendre des éléments
+await page.waitForSelector('[data-testid="content"]');      // Attendre qu'un élément apparaisse
+await page.waitForSelector('#loading', { state: 'hidden' }); // Attendre qu'un élément disparaisse
+
+// Attendre du contenu
+await page.waitForFunction(() => document.title !== 'Loading'); // Attendre une condition
+await page.waitForTimeout(1000);                            // Attendre un délai (à éviter)
+
+// Attendre des requêtes
+await page.waitForResponse('**/api/data');                  // Attendre une réponse API
+await page.waitForRequest('**/api/submit');                 // Attendre une requête
+```
+
+### D) Vérifications avec expect
+```typescript
+// Vérifications de page
+await expect(page).toHaveTitle('Titre attendu');            // Vérifier le titre
+await expect(page).toHaveURL('https://example.com/page');   // Vérifier l'URL
+await expect(page).toHaveURL(/.*\/dashboard$/);             // Vérifier URL avec regex
+
+// Vérifications d'éléments
+await expect(page.locator('#element')).toBeVisible();       // Élément visible
+await expect(page.locator('#element')).toBeHidden();        // Élément caché
+await expect(page.locator('#element')).toBeEnabled();       // Élément activé
+await expect(page.locator('#element')).toBeDisabled();      // Élément désactivé
+
+// Vérifications de contenu
+await expect(page.locator('h1')).toHaveText('Mon titre');   // Texte exact
+await expect(page.locator('h1')).toContainText('titre');    // Texte partiel
+await expect(page.locator('[name="field"]')).toHaveValue('valeur'); // Valeur de champ
+
+// Vérifications d'attributs
+await expect(page.locator('img')).toHaveAttribute('src', '/image.png'); // Attribut spécifique
+await expect(page.locator('a')).toHaveClass('active');      // Classe CSS
+
+// Vérifications de count
+await expect(page.locator('.item')).toHaveCount(5);         // Nombre d'éléments
+await expect(page.locator('.error')).toHaveCount(0);        // Aucun élément d'erreur
+```
+
+### E) Sélecteurs recommandés (par ordre de priorité)
+```typescript
+// 1. Par rôle (le plus robuste)
+page.getByRole('button', { name: 'Submit' })
+page.getByRole('link', { name: 'Contact' })
+page.getByRole('textbox', { name: 'Username' })
+
+// 2. Par data-testid (recommandé pour les tests)
+page.locator('[data-testid="submit-button"]')
+
+// 3. Par texte (pour le contenu visible)
+page.locator('text=Exact text')
+page.locator('text=/partial text/i')  // Regex case-insensitive
+
+// 4. Par ID ou attributs stables
+page.locator('#unique-id')
+page.locator('[name="field-name"]')
+
+// 5. CSS selectors (à éviter si possible)
+page.locator('.class-name')
+page.locator('div > span:nth-child(2)')
+```
+
+### F) Pattern complet avec actions et vérifications
+```typescript
+test('Exemple complet d\'actions et vérifications', async ({ page }) => {
+    await test.step('Given - Je navigue vers la page de contact', async () => {
+        await page.goto('https://example.com');
+        await page.click('text=Accept cookies');
+        await expect(page).toHaveTitle('Accueil');
+    });
+    
+    await test.step('When - Je remplis le formulaire de contact', async () => {
+        await page.getByRole('link', { name: 'Contact' }).click();
+        await page.waitForURL('**/contact');
+        
+        await page.fill('[name="name"]', 'Jean Dupont');
+        await page.fill('[name="email"]', 'jean@example.com');
+        await page.fill('[name="message"]', 'Message de test');
+        await page.getByRole('button', { name: 'Envoyer' }).click();
+    });
+    
+    await test.step('Then - Le message de confirmation s\'affiche', async () => {
+        await expect(page.locator('.success-message')).toBeVisible();
+        await expect(page.locator('.success-message')).toContainText('Message envoyé');
+        await expect(page).toHaveURL('**/contact/success');
+    });
+});
+```
+
+## ÉTAPE 5 : PATTERNS DE TEST AVANCÉS
+
+### A) Tests paramétrés avec boucle
+```typescript
+const sections = [
+    { name: 'Section1', url: '/url1', title: 'Title1' },
+    { name: 'Section2', url: '/url2', title: 'Title2' }
+];
+
+for (const section of sections) {
+    test('Test dynamique pour ' + section.name, async ({ page }) => {
+        // Utiliser section.name, section.url, section.title
+    });
+}
+```
+**Avantages :** Évite la duplication de code, facilite la maintenance
+
+## ÉTAPE 6 : ACTIONS PLAYWRIGHT ESSENTIELLES
+
+### Navigation
+- `await page.goto('url');` : Naviguer vers une page
+- `await page.waitForURL('url');` : Attendre une URL spécifique
+
+### Interactions
+- `await page.click('text=Texte');` : Cliquer sur un élément par texte
+- `await page.getByRole('link', { name: 'Nom' }).click();` : Cliquer via rôle
+
+### Attentes/Assertions
+- `await expect(page).toHaveTitle('Titre');` : Vérifier le titre
+- `await expect(page).toHaveURL('url');` : Vérifier l'URL
+
+## ÉTAPE 7 : CHECKLIST AVANT FINALISATION
+
+□ **Imports corrects** : Seulement test et expect si pas d'usage spécial
+□ **Nommage descriptif** : Tests et groupes avec noms clairs
+□ **Structure BDD** : Given/When/Then dans les test.step
+□ **Gestion des cookies** : Inclure page.click('text=Agree and close') si nécessaire  
+□ **Attentes explicites** : waitForURL avant les assertions
+□ **Assertions pertinentes** : Vérifier titres ET URLs
+□ **Commentaires** : Expliquer la logique métier si complexe
+
+## ÉTAPE 8 : BONNES PRATIQUES
+
+### Organisation
+- Un describe par fonctionnalité majeure
+- Tests atomiques et indépendants
+- Données de test externalisées dans des constantes
+
+### Maintenance
+- Sélecteurs robustes (getByRole > text > CSS)
+- Messages d'erreur explicites
+- Tests paramétrés pour éviter la duplication
+
+### Performance
+- Réutiliser la même page dans un describe
+- Éviter les timeouts fixes, préférer waitFor*
+
+## MODÈLE TYPE COMPLET
+
+```typescript
+import { test, expect } from '@playwright/test';
+
+// Données de test
+const testData = [
+    { name: 'Section1', url: '/section1', title: 'Titre Section 1' }
+];
+
+test.describe('Fonctionnalité X', () => {
+    
+    test('Test simple', async ({ page }) => {
+        await test.step('Given - Je suis sur la page d\'accueil', async () => {
+            await page.goto('https://example.com');
+            await expect(page).toHaveTitle('Titre attendu');
+        });
+        
+        await test.step('When - Je clique sur un lien', async () => {
+            await page.click('text=Lien');
+        });
+        
+        await test.step('Then - Je suis redirigé correctement', async () => {
+            await page.waitForURL('**/nouvelle-page');
+            await expect(page).toHaveTitle('Nouveau titre');
+        });
+    });
+    
+    // Tests paramétrés
+    for (const data of testData) {
+        test('Test paramétré pour ' + data.name, async ({ page }) => {
+            // Logique utilisant data.name, data.url, data.title
+        });
+    }
+});
+```
