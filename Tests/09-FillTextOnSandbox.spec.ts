@@ -20,8 +20,11 @@ test.describe('Actions dans le Sandbox Automation', () => {
             await page.goto('https://thefreerangetester.github.io/sandbox-automation-testing/')
         })
 
-        await test.step('', async () => {
+        await test.step('Je remplie la textbox toouche par touche', async () => {
             await page.getByPlaceholder('Ingresá texto').type('Ceci est un texte rempli par Playwright', { delay: 100 });
+            //je simule le touche enter pour validr le formulaire
+            await page.keyboard.press('Enter');
+            await page.getByPlaceholder('Ingresá texto').press('Enter');
         })
         
             
