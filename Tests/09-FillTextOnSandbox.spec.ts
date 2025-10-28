@@ -11,12 +11,23 @@ test.describe('Actions dans le Sandbox Automation', () => {
         })
 
         await test.step('Je remplie le champ Un aburrido texto', async () => {
-            //await page.getByRole('textbox', { name: 'Un aburrido texto' }).fill('Ceci est un texte rempli par Playwright');
-            await page.getByPlaceholder('Ingresá texto').fill('Ceci est un texte rempli par Playwright');
+            await page.getByRole('textbox', { name: 'Un aburrido texto' }).fill('Ceci est un texte rempli par Playwright');
+        })
+    })
+
+    test('Remplir en simulant de taper les touches dans le clavier', async ({ page }) => {
+        await test.step('tant que je navigue vers le Sandbox automation', async () => {
+            await page.goto('https://thefreerangetester.github.io/sandbox-automation-testing/')
+        })
+
+        await test.step('', async () => {
+            await page.getByPlaceholder('Ingresá texto').type('Ceci est un texte rempli par Playwright', { delay: 100 });
         })
         
-
+            
+       })
         
     })
     
-})
+    
+
