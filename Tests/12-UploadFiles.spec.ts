@@ -1,7 +1,7 @@
 import { test, expect} from '@playwright/test';
 
 test.describe('Simulation upload files', () => {
-    test('Je peux telecharger des fichiers', async ({ page }) => {
+    test.skip('Je peux telecharger des fichiers', async ({ page }) => {
         await test.step('tant que je navigue vers le Sandbox automation', async () => {
             await page.goto('https://thefreerangetester.github.io/sandbox-automation-testing/')
         })

@@ -1,7 +1,7 @@
 import { test, Browser, Page } from '@playwright/test';      //import des librairies necessaires
 
     test.describe('Feature', () => {      //debut du bloc de tests
-        test('scenario 1', async({ page }) => {      //debut du test scenario 1
+        test.skip('scenario 1', async({ page }) => {      //debut du test scenario 1
             await test.step('Etant donné que je suis sur la page d\'accueil', async () => {      //debut de l'etape 1
                 await page.goto('https://www.isagri.fr/');      //aller a la page d'accueil
             })

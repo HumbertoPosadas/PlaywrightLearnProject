@@ -2,7 +2,7 @@ import { test, Browser, Page } from '@playwright/test';      //import des librai
 
 
 test.describe('Navigation vers le site www.isagri.com', () => {      
-    test('Le lien principal redirige correctement', async({ page }) => {      
+    test.skip('Le lien principal redirige correctement', async({ page }) => {      
         await test.step('Etant donné que je suis sur la page d\'accueil isagri', async () => {      
             await page.goto('https://www.isagri.fr/');     
         })

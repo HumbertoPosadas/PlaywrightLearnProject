@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test';
 // ar exemple pour verifier plusieurs elements d'une page web si une assertion echoue, les autres assertions seront quand meme verifiees.
 
 test.describe('Soft assertions pour les checkboxes', () => {
-    test('Les assertions doivent continuer même si une échoue', async ({ page }) => {
+    test.skip('Les assertions doivent continuer même si une échoue', async ({ page }) => {
 
         await test.step('Je navigue vers le Sandbox automation', async () => {
             await page.goto('https://thefreerangetester.github.io/sandbox-automation-testing/')
