@@ -50,6 +50,17 @@ export default defineConfig({
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
     },
+    {
+      name: 'API Tests',
+      testMatch : '**/APITests/**/*', //cette configuration prends en compte mon 18-APITests.spec.ts
+      use: {
+        baseURL: 'https://api.github.com',
+        extraHTTPHeaders: {
+          'Accept': 'application/vnd.github.v3+json',
+          'Authorization': `Bearer ${process.env.API_TOKEN}`
+        }
+      }
+    },
 
     /* Test against mobile viewports. */
     // {
