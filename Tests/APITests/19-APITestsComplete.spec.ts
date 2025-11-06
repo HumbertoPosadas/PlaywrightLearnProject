@@ -17,6 +17,7 @@ test.beforeAll(async ({ request }) => {
             name: REPO,
         }
     });
+    console.log(response.status.toString);
     expect(response.ok()).toBeTruthy();
 });
 
@@ -31,10 +32,11 @@ test.describe('Tests CRUD API GitHub', () => {
                 body: 'Ooooopah Gangnam style!'
             }
         });
+        console.log(response.status);
         expect(response.ok()).toBeTruthy();
         expect(response.status()).toBe(201);
         
-       console.log('Issue created successfully');
+       
     })
 
     test('Je peux visualiser la liste de issues dans mon repo', async ({ request }) => {
@@ -47,6 +49,7 @@ test.describe('Tests CRUD API GitHub', () => {
                 body: 'Ooooopah Gangnam style!'
             })
         )
+        console.log(response.status);
     })
 
     test('Je suis capable de clore mon issue', async ({ request }) => {
@@ -78,5 +81,7 @@ test.describe('Tests CRUD API GitHub', () => {
 //apres mes tests, je supprime le repository créé
 test.afterAll(async ({ request }) => {
     const response = await request.delete(`/repos/${USER}/${REPO}`);
+    console.log(response.status);
     expect(response.ok()).toBeTruthy();
+    
 });
